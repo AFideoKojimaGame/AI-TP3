@@ -5,6 +5,7 @@ using UnityEngine;
 public class Flocking : MonoBehaviour {
 
     List<Boid> flock = new List<Boid>();
+    Transform target;
 
 	// Use this for initialization
 	void Start () {
@@ -15,11 +16,13 @@ public class Flocking : MonoBehaviour {
             }
         }
 
-        SetTarget(new Vector3(3, 3, 0));
+        target = GameObject.Find("Target").transform;
+        SetTarget(target.position);
     }
 	
 	// Update is called once per frame
 	void Update () {
+        SetTarget(target.position);
         Adjacents();
 	}
 
@@ -48,7 +51,7 @@ public class Flocking : MonoBehaviour {
                 for (int j = 0; j < flock.Count; j++) {
                     b = flock[j];
                     dist = Vector3.Distance(a.transform.position, b.transform.position);
-                    if(dist < a.range) {
+                    if(dist < 100) {
                         a.AddNeighbor(b);
                     }
                 }

@@ -15,6 +15,10 @@ public class Boid : MonoBehaviour {
 
     public Vector3 vel = Vector3.zero;
 
+    float separationWeight = 1;
+    float alignmentWeight = 1;
+    float cohesionWeight = 1;
+
     // Use this for initialization
     void Start() {
 
@@ -26,23 +30,21 @@ public class Boid : MonoBehaviour {
         ComputeVelocity();
 
         dist = Vector3.Distance(transform.position, target);
-        Debug.Log(dist);
-        if (dist > 1) {
-            transform.Translate(Vector2.up * Time.deltaTime * 5);
+
+            Vector2 res1 = transform.up + vel.normalized + direction;
+            Vector2 res2 =  transform.up + vel.normalized;
+            Vector2 res = res1.normalized + res2.normalized;
+            res.Normalize();
+            transform.Translate(res * Time.deltaTime * 5, Space.World);
+
             direction = target - transform.position;
-            direction.x += vel.x;
-            direction.y += vel.y;
-            //transform.rotation = Quaternion.Slerp(transform.rotation,
-            //                                      Quaternion.LookRotation(direction, Vector3.forward),
-            //                                      0.05f);
 
             float angle = -Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
 
-
             transform.rotation = Quaternion.Slerp(transform.rotation,
                                   Quaternion.AngleAxis(angle, transform.forward),
-                                  0.05f);
-        }
+                                  Time.deltaTime * 5);
+        
     }
 
     public void AddNeighbor(Boid b) {
@@ -60,10 +62,8 @@ public class Boid : MonoBehaviour {
         Vector3 cohesion = ComputeCohesion();
         Vector3 separation = ComputeSeparation();
 
-        vel.x = (cohesion.x + separation.x + alignment.x) / 3;
-        vel.y = (cohesion.y + separation.y + alignment.y) / 3;
-
-        vel.Normalize();
+        vel.x = (cohesion.x * cohesionWeight + separation.x * separationWeight + alignment.x * alignmentWeight) / 3;
+        vel.y = (cohesion.y * cohesionWeight + separation.y * separationWeight + alignment.y * alignmentWeight) / 3;
     }
 
     Vector3 ComputeAlignment() {
