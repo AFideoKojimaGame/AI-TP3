@@ -31,10 +31,7 @@ public class Boid : MonoBehaviour {
 
         dist = Vector3.Distance(transform.position, target);
 
-            Vector2 res1 = transform.up + vel.normalized + direction;
-            Vector2 res2 =  transform.up + vel.normalized;
-            Vector2 res = res1.normalized + res2.normalized;
-            res.Normalize();
+            Vector2 res = transform.up + vel.normalized;
             transform.Translate(res * Time.deltaTime * 5, Space.World);
 
             direction = target - transform.position;
@@ -53,8 +50,6 @@ public class Boid : MonoBehaviour {
 
     public void ClearNeighbors() {
         adjacentBoids.Clear();
-        //adjacentBoids = null;
-        //adjacentBoids = new List<Boid>();
     }
 
     public void ComputeVelocity() {
@@ -62,20 +57,17 @@ public class Boid : MonoBehaviour {
         Vector3 cohesion = ComputeCohesion();
         Vector3 separation = ComputeSeparation();
 
-        vel.x = (cohesion.x * cohesionWeight + separation.x * separationWeight + alignment.x * alignmentWeight) / 3;
-        vel.y = (cohesion.y * cohesionWeight + separation.y * separationWeight + alignment.y * alignmentWeight) / 3;
+        vel = (cohesion * cohesionWeight + separation * separationWeight + alignment * alignmentWeight) / 3;
     }
 
     Vector3 ComputeAlignment() {
         Vector3 v = Vector3.zero;
         for(int i = 0; i < adjacentBoids.Count; i++) {
-            v.x += adjacentBoids[i].vel.x;
-            v.y += adjacentBoids[i].vel.y;
+            v += adjacentBoids[i].transform.up;
         }
 
         if (adjacentBoids.Count > 0) {
-            v.x /= adjacentBoids.Count;
-            v.y /= adjacentBoids.Count;
+            v /= adjacentBoids.Count;
         }
 
         v.Normalize();
@@ -86,17 +78,14 @@ public class Boid : MonoBehaviour {
     Vector3 ComputeCohesion() {
         Vector3 v = Vector3.zero;
         for (int i = 0; i < adjacentBoids.Count; i++) {
-            v.x += adjacentBoids[i].transform.position.x;
-            v.y += adjacentBoids[i].transform.position.y;
+            v += adjacentBoids[i].transform.position;
         }
 
         if (adjacentBoids.Count > 0) {
-            v.x /= adjacentBoids.Count;
-            v.y /= adjacentBoids.Count;
+            v /= adjacentBoids.Count;
         }
 
-        v.x = v.x - transform.position.x;
-        v.y = v.y - transform.position.y;
+        v -= transform.position;
 
         v.Normalize();
 
@@ -106,18 +95,14 @@ public class Boid : MonoBehaviour {
     Vector3 ComputeSeparation() {
         Vector3 v = Vector3.zero;
         for (int i = 0; i < adjacentBoids.Count; i++) {
-            v.x += adjacentBoids[i].transform.position.x - transform.position.x;
-            v.y += adjacentBoids[i].transform.position.y - transform.position.y;
+            v += adjacentBoids[i].transform.position - transform.position;
         }
 
-        if (adjacentBoids.Count > 0)
-        {
-            v.x /= adjacentBoids.Count;
-            v.y /= adjacentBoids.Count;
+        if (adjacentBoids.Count > 0) {
+            v /= adjacentBoids.Count;
         }
 
-        v.x *= -1;
-        v.y *= -1;
+        v *= -1;
 
         v.Normalize();
 
